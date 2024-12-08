@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/schollz/progressbar/v3"
 )
 
 type file struct {
@@ -133,7 +134,9 @@ func createGamePackage(zipFilename string, files []file, client *http.Client) er
 			return errors.Wrap(err, "failed to create zip file")
 		}
 
-		if _, err = io.Copy(w, res.Body); err != nil {
+		bar := progressbar.DefaultBytes(res.ContentLength, "downloading")
+
+		if _, err = io.Copy(io.MultiWriter(w, bar), res.Body); err != nil {
 			return errors.Wrap(err, "failed to copy file")
 		}
 	}
